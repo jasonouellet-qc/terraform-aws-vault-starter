@@ -5,8 +5,7 @@ export availability_zone="$(curl -s http://169.254.169.254/latest/meta-data/plac
 export instance_id="$(curl -s http://169.254.169.254/latest/meta-data/instance-id)"
 export local_ipv4="$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)"
 
-# install package
-
+echo "Installing Vault package"
 curl -fsSL https://apt.releases.hashicorp.com/gpg | apt-key add -
 apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
 apt-get update
@@ -21,6 +20,14 @@ apt-get install -y awscli
 
 echo "Configuring system time"
 timedatectl set-timezone UTC
+
+echo "Overwriting Vault binary using "
+# we install the package to get things like the vault user and systemd configuration,
+# but we're going to use our own binary:
+aws s3 cp s3://${vault_binary_bucket}/${vault_binary_name} /tmp/vault.gz
+gunzip -f /tmp/vault.gz
+cp /tmp/vault /usr/bin/vault
+/sbin/setcap cap_ipc_lock=+ep /usr/bin/vault
 
 # Have the instance retrieve it's own instance id
 asg_name=$(aws autoscaling describe-auto-scaling-instances --instance-ids "$instance_id" --region "${region}" | jq -r ".AutoScalingInstances[].AutoScalingGroupName")
@@ -57,13 +64,11 @@ ui = true
 storage "raft" {
   path    = "/opt/vault/data"
   node_id = "$instance_id"
-$(
-for i in $${instance_ip_array[*]}; do
-    echo "  retry_join {
-        leader_api_addr = \"http://$i:8200\"
-    }"
-done
-)
+  retry_join {
+    auto_join = "provider=aws region=us-east-1 tag_key=owner tag_value=ncabatoff"
+    auto_join_scheme = "http"
+    auto_join_port = 8200
+  }
 }
 
 cluster_addr = "http://$local_ipv4:8201"
@@ -80,7 +85,8 @@ seal "awskms" {
 }
 EOF
 
-chown -R vault:vault /etc/vault.d/*
+mkdir -p -m 700 /opt/vault/data
+chown -R vault:vault /etc/vault.d/* /opt/vault
 chmod -R 640 /etc/vault.d/*
 
 # this part fetches all nodes (in service or not) from the autoscaling

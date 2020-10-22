@@ -37,11 +37,13 @@ data "template_file" "install_hashitools_vault" {
   template = file("${path.module}/scripts/install_hashitools_vault.sh.tpl")
 
   vars = {
-    ami           = data.aws_ami.ubuntu.id
-    region        = data.aws_region.current.name
-    kms_key_id    = aws_kms_key.vault.key_id
-    vault_nodes   = var.vault_nodes
-    vault_version = var.vault_version
+    ami                 = data.aws_ami.ubuntu.id
+    region              = data.aws_region.current.name
+    kms_key_id          = aws_kms_key.vault.key_id
+    vault_nodes         = var.vault_nodes
+    vault_version       = var.vault_version
+    vault_binary_bucket = var.vault_binary_bucket
+    vault_binary_name   = var.vault_binary_name
   }
 }
 

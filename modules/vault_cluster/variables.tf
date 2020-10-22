@@ -55,10 +55,10 @@ variable "nat_gateway_subnet_cidr" {
   description = "CIDR block for NAT gateway subnet"
 }
 
-variable "lambda_primary_subnet_cidr" {
-  description = "CIDR block for primary lambda subnet"
+variable "vault_binary_bucket" {
+  description = "s3 bucket to copy vault binary from"
 }
 
-variable "lambda_secondary_subnet_cidr" {
-  description = "CIDR block for secondary lambda subnet"
+variable "vault_binary_name" {
+  description = "name of binary within vault_binary_bucket to run"
 }

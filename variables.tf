@@ -54,12 +54,10 @@ variable "nat_gateway_subnet_cidr" {
   default     = "172.31.160.0/20"
 }
 
-variable "lambda_primary_subnet_cidr" {
-  description = "CIDR block for primary lambda subnet"
-  default     = "172.31.128.0/20"
+variable "vault_binary_bucket" {
+  description = "s3 bucket to copy vault binary from"
 }
 
-variable "lambda_secondary_subnet_cidr" {
-  description = "CIDR block for secondary lambda subnet"
-  default     = "172.31.144.0/20"
+variable "vault_binary_name" {
+  description = "name of binary within vault_binary_bucket to run"
 }

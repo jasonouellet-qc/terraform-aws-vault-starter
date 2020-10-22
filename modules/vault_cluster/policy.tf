@@ -85,3 +85,32 @@ resource "aws_iam_role_policy_attachment" "create_tags" {
   policy_arn = aws_iam_policy.create_tags.arn
 }
 
+resource "aws_iam_policy" "read_bucket" {
+  name_prefix = "${random_id.environment_name.hex}-vault-read-bucket-"
+  path        = "/"
+  description = "IAM policy for creating tags on instances"
+
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": "s3:ListBucket",
+      "Resource": "arn:aws:s3:::ncabatoff-vault-binaries"
+    },
+    {
+      "Effect": "Allow",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::ncabatoff-vault-binaries/*"
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy_attachment" "read_bucket" {
+  role       = aws_iam_role.instance_role.name
+  policy_arn = aws_iam_policy.read_bucket.arn
+}
+
