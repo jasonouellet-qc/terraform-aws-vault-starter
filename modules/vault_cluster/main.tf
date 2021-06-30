@@ -20,8 +20,20 @@ data "aws_ami" "ubuntu" {
   owners = ["099720109477"] # Canonical
 }
 
-data "aws_subnet_ids" "default" {
+data "aws_subnet_ids" "public" {
   vpc_id = data.aws_vpc.vault_vpc.id
+  filter {
+    name = "tag:Tier"
+    values = ["Public"]
+  }
+}
+
+data "aws_subnet_ids" "prive" {
+  vpc_id = data.aws_vpc.vault_vpc.id
+  filter {
+    name = "tag:Tier"
+    values = ["Prive"]
+  }
 }
 
 data "aws_availability_zones" "available" {
@@ -49,7 +61,7 @@ resource "aws_lb" "vault" {
   name               = "${random_id.environment_name.hex}-vault-nlb"
   internal           = var.elb_internal
   load_balancer_type = "network"
-  subnets            = data.aws_subnet_ids.default.ids
+  subnets            = data.aws_subnet_ids.public.ids
 }
 
 resource "aws_lb_listener" "vault" {
@@ -93,8 +105,9 @@ resource "aws_autoscaling_group" "vault" {
   wait_for_capacity_timeout = "480s"
   health_check_grace_period = 300
   health_check_type         = "EC2"
-  vpc_zone_identifier       = data.aws_subnet_ids.default.ids
+  vpc_zone_identifier       = data.aws_subnet_ids.prive.ids
   target_group_arns         = [aws_lb_target_group.vault.arn]
+  enabled_metrics           = var.asg_enabled_metrics
 
   tags = [
     {

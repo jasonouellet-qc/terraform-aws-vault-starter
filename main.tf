@@ -7,6 +7,7 @@ module "vault_cluster" {
   owner                        = var.owner
   name_prefix                  = var.name_prefix
   elb_internal                 = var.elb_internal
+  asg_enabled_metrics          = var.asg_enabled_metrics
   key_name                     = var.key_name
   instance_type                = var.instance_type
   vault_nodes                  = var.vault_nodes

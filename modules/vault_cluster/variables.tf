@@ -62,3 +62,10 @@ variable "lambda_primary_subnet_cidr" {
 variable "lambda_secondary_subnet_cidr" {
   description = "CIDR block for secondary lambda subnet"
 }
+
+variable "asg_enabled_metrics" {
+  type        = list(string)
+  default     = null
+  description = "List of metrics to collect."
+}
+
